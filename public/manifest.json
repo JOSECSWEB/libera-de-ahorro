@@ -1,0 +1,8 @@
+{
+  "name": "Libreta de Ahorro USDT",
+  "short_name": "Ahorro USDT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F1ECDD",
+  "theme_color": "#17362E"
+}

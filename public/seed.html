@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cargar historial inicial</title>
+<style>
+  body{font-family:-apple-system,sans-serif; background:#F1ECDD; color:#1E3B34; padding:24px; max-width:480px; margin:0 auto;}
+  h1{font-size:18px;}
+  p{font-size:14px; color:#5B7268; line-height:1.5;}
+  input{width:100%; padding:12px; border-radius:10px; border:1px solid #DCD3B8; font-size:16px; margin:10px 0;}
+  button{width:100%; padding:14px; border-radius:12px; border:none; background:#1E3B34; color:#F1ECDD; font-size:15px; font-weight:700;}
+  #msg{margin-top:14px; font-size:13px; padding:10px; border-radius:8px;}
+  .ok{background:#E5F1EA; color:#0F7A57;} .err{background:#F6E7E3; color:#A5382A;}
+</style>
+</head>
+<body>
+  <h1>Cargar historial inicial</h1>
+  <p>Esto carga de una sola vez los 13 movimientos que ya tenías registrados (del 25/06 al 28/08/2026). Solo funciona si la base de datos está vacía — no duplica nada si ya cargaste algo.</p>
+  <input type="password" id="pin" placeholder="PIN de edición" inputmode="numeric">
+  <button id="btn">Cargar historial</button>
+  <div id="msg"></div>
+
+<script>
+const SEED = [
+  {date:"2026-06-25", time:"09:00", type:"in", desc:"Compra P2P · Pago_Seguro_y_R…", op:"22903446392464617472", bs:20000, tasa:800, usdt:24.94, note:""},
+  {date:"2026-06-25", time:"09:12", type:"in", desc:"Compra P2P · tinita17", op:"22903449551237877760", bs:20000, tasa:798.5, usdt:24.98, note:""},
+  {date:"2026-06-25", time:"10:40", type:"in", desc:"Compra P2P · jmas", op:"22903471695944667136", bs:19800, tasa:795, usdt:24.84, note:""},
+  {date:"2026-07-05", time:"19:37", type:"out", desc:"Venta P2P · patronbtc", op:"22907230748321284096", bs:6530, tasa:720.8, usdt:9.11, note:"Verificado: banco muestra saliente de Bs 6.530 a V30966190."},
+  {date:"2026-07-07", time:"09:36", type:"out", desc:"Venta P2P · MACHUFI", op:"22907804178634207232", bs:7324, tasa:751.2, usdt:9.8, note:"Conciliado: banco Bs 7.424 = venta Bs 7.324 + Bs 100 de fondos personales."},
+  {date:"2026-07-09", time:"10:53", type:"in", desc:"Compra P2P · VzlaProPago", op:"22908548220608806912", bs:6000, tasa:828.899, usdt:7.17, note:"Reposición de retiro previo"},
+  {date:"2026-07-09", time:"10:58", type:"in", desc:"Compra P2P · VJTA", op:"22908549494097162240", bs:6000, tasa:830, usdt:7.16, note:"Reposición de retiro previo"},
+  {date:"2026-08-06", time:"14:38", type:"out", desc:"Venta P2P · Wdmirandas", op:"22918751868400234496", bs:26500, tasa:840.505, usdt:31.58, note:"Verificado: cierra la salida bancaria de Bs 26.200 a V30966190."},
+  {date:"2026-08-10", time:"09:49", type:"in", desc:"Compra P2P · Crypto_Oslian", op:"22920128529346441216", bs:21250, tasa:863, usdt:24.56, note:"Nuevo depósito"},
+  {date:"2026-08-10", time:"09:55", type:"in", desc:"Compra P2P · Criptoinversor2…", op:"22920130210879045632", bs:21250, tasa:868, usdt:24.42, note:"Nuevo depósito"},
+  {date:"2026-08-14", time:"", type:"out", desc:"Venta P2P · retiro a V30966190", op:"—", bs:8500, tasa:850, usdt:10, note:"Verificado: banco muestra saliente de Bs 8.500 a V30966190."},
+  {date:"2026-08-25", time:"", type:"out", desc:"Venta P2P · ARVELO RONDON DARWIS JOSE", op:"22925664402423808000", bs:11776, tasa:927.009, usdt:12.76, note:"Confirmado: Binance validó la recepción del pago en Bancamiga."},
+  {date:"2026-08-28", time:"20:13", type:"in", desc:"Compra P2P · kavg10", op:"22926808732358168576", bs:19000, tasa:952, usdt:19.47, note:"Nuevo depósito"}
+];
+
+document.getElementById('btn').addEventListener('click', async ()=>{
+  const pin = document.getElementById('pin').value.trim();
+  const msg = document.getElementById('msg');
+  if(!pin){ msg.className='err'; msg.textContent='Ingresa el PIN.'; return; }
+  try{
+    const res = await fetch('/api/transactions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-pin':pin},
+      body: JSON.stringify({action:'seed', pin, transactions: SEED})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Error al cargar');
+    msg.className='ok';
+    msg.textContent = `Listo, se cargaron ${data.length} movimientos. Ya puedes ir a la libreta principal.`;
+  }catch(e){
+    msg.className='err'; msg.textContent = e.message;
+  }
+});
+</script>
+</body>
+</html>
